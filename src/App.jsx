@@ -17,7 +17,8 @@ function App() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const {  { session } } = await supabase.auth.getSession();
+      // Perbaikan di sini:
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setUser(session.user);
       }
