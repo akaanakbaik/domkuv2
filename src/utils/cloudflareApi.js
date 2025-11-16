@@ -1,60 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { supabase } from './utils/supabaseClient';
-import Loading from './components/Loading';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
-import Home from './pages/Home';
-import SubdomainPage from './pages/SubdomainPage';
-import ApiPage from './pages/ApiPage';
-import DeveloperPage from './pages/DeveloperPage';
+const API_TOKEN = import.meta.env.VITE_CLOUDFLARE_API_TOKEN;
+const ZONE_ID = import.meta.env.VITE_CLOUDFLARE_ZONE_ID;
+const BASE_URL = `https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records`;
 
-function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showSidebar, setShowSidebar] = useState(false);
-  const location = useLocation();
+export const createDNSRecord = async (name, type, content, ttl = 1) => {
+  const response = await fetch(BASE_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${API_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      type,
+      name,
+      content,
+      ttl,
+      proxied: false
+    })
+  });
+  return response.json();
+};
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const {  { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUser(session.user);
-      }
-      setLoading(false);
-    };
-    checkSession();
+export const deleteDNSRecord = async (id) => {
+  const response = await fetch(`${BASE_URL}/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${API_TOKEN}`,
+      'Content-Type': 'application/json',
+    }
+  });
+  return response.json();
+};
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (loading) {
-    return <Loading />;
-  }
-
-  const protectedRoutes = ['/subdomain', '/api'];
-  if (protectedRoutes.includes(location.pathname) && !user) {
-    return <Loading />;
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Navbar setShowSidebar={setShowSidebar} />
-      <Sidebar show={showSidebar} setShow={setShowSidebar} user={user} />
-      <main className="pt-16">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/subdomain" element={<SubdomainPage user={user} />} />
-          <Route path="/api" element={<ApiPage user={user} />} />
-          <Route path="/developer" element={<DeveloperPage />} />
-        </Routes>
-      </main>
-    </div>
-  );
-}
-
-export default App;
+export const listDNSRecords = async () => {
+  const response = await fetch(BASE_URL, {
+    headers: {
+      'Authorization': `Bearer ${API_TOKEN}`,
+      'Content-Type': 'application/json',
+    }
+  });
+  return response.json();
+};
