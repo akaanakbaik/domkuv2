@@ -5,9 +5,9 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 animate-fade-in">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-blue-400 mb-4">domku</h1>
+        <h1 className="text-4xl font-bold text-blue-500 mb-4">domku</h1>
         <p className="text-lg text-gray-300 max-w-2xl mx-auto">
           Platform untuk membuat subdomain gratis dan mudah untuk kebutuhan hosting, API, dan lainnya.
         </p>
@@ -16,26 +16,26 @@ const Home = () => {
       <div className="flex flex-wrap justify-center gap-4 mb-12">
         <button
           onClick={() => navigate('/subdomain')}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+          className="btn btn-blue"
         >
           Buat Subdomain Anda
         </button>
         <button
-          onClick={() => navigate('/auth')} // Asumsikan AuthModal di halaman ini
-          className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition"
+          onClick={() => navigate('/auth')}
+          className="btn btn-gray"
         >
           Daftar
         </button>
         <button
           onClick={() => navigate('/auth')}
-          className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition"
+          className="btn btn-gray"
         >
           Masuk
         </button>
       </div>
 
       <div className="max-w-4xl mx-auto mb-12">
-        <h2 className="text-2xl font-semibold text-blue-300 mb-4">Fitur</h2>
+        <h2 className="text-2xl font-semibold text-blue-400 mb-4">Fitur</h2>
         <ul className="list-disc list-inside text-gray-300 space-y-2">
           <li>Buat subdomain gratis dengan mudah</li>
           <li>Dukungan DNS record A, CNAME, TXT, dll</li>
