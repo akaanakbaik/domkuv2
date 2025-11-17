@@ -5,8 +5,8 @@ const Navbar = ({ setShowSidebar }) => {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 z-50">
-      <h1 className="text-xl font-bold text-blue-400">domku</h1>
+    <nav className="fixed top-0 left-0 right-0 h-16 bg-dark-800 border-b border-dark-700 flex items-center justify-between px-4 z-50">
+      <h1 className="text-xl font-bold text-blue-500">domku</h1>
       <button
         onClick={() => setShowSidebar(true)}
         className="text-white focus:outline-none"
