@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { supabase } from './utils/supabaseClient';
 import Loading from './components/Loading';
 import Navbar from './components/Navbar';
@@ -8,12 +8,13 @@ import Home from './pages/Home';
 import SubdomainPage from './pages/SubdomainPage';
 import ApiPage from './pages/ApiPage';
 import DeveloperPage from './pages/DeveloperPage';
+import AuthPage from './pages/AuthPage';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false);
-  const location = useLocation();
+  const [theme, setTheme] = useState('system');
 
   useEffect(() => {
     const checkSession = async () => {
@@ -32,18 +33,19 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) {
-    return <Loading />;
-  }
+  useEffect(() => {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const applied = theme === 'system' ? (prefersDark ? 'dark' : 'light') : theme;
+    document.documentElement.dataset.theme = applied;
+  }, [theme]);
 
-  const protectedRoutes = ['/subdomain', '/api'];
-  if (protectedRoutes.includes(location.pathname) && !user) {
+  if (loading) {
     return <Loading />;
   }
 
   return (
     <div className="min-h-screen bg-dark-900 text-white">
-      <Navbar setShowSidebar={setShowSidebar} />
+      <Navbar setShowSidebar={setShowSidebar} user={user} theme={theme} setTheme={setTheme} />
       <Sidebar show={showSidebar} setShow={setShowSidebar} user={user} />
       <main className="pt-16">
         <Routes>
@@ -51,6 +53,7 @@ function App() {
           <Route path="/subdomain" element={<SubdomainPage user={user} />} />
           <Route path="/api" element={<ApiPage user={user} />} />
           <Route path="/developer" element={<DeveloperPage />} />
+          <Route path="/auth" element={<AuthPage />} />
         </Routes>
       </main>
     </div>
