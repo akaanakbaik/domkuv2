@@ -8,7 +8,7 @@ const ApiPage = ({ user }) => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-blue-400 mb-6">API Dokumentasi</h1>
-      <div className="bg-gray-800 p-6 rounded-lg max-w-4xl mx-auto">
+      <div className="card max-w-4xl mx-auto">
         <h2 className="text-lg font-semibold text-blue-300 mb-2">Deskripsi</h2>
         <p className="text-gray-300 mb-4">
           Gunakan API ini untuk membuat dan mengelola subdomain secara otomatis.
@@ -27,7 +27,7 @@ const ApiPage = ({ user }) => {
         </ul>
 
         <h2 className="text-lg font-semibold text-blue-300 mb-2">Contoh cURL</h2>
-        <pre className="bg-gray-900 p-4 rounded text-sm text-gray-200 overflow-x-auto relative">
+        <pre className="bg-dark-900 p-4 rounded text-sm text-gray-200 overflow-x-auto relative">
             {`{
   "author": "Aka",
   "email_author": "akaanakbaik17@proton.me",`}
