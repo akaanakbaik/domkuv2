@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import AuthPrompt from '../components/AuthPrompt';
 
 const ApiPage = ({ user }) => {
-  if (!user) return <div>Harus login</div>;
+  const [showPrompt, setShowPrompt] = useState(!user);
+  const currentUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
-  const currentUrl = window.location.origin;
+  useEffect(() => {
+    setShowPrompt(!user);
+  }, [user]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-blue-400 mb-6">API Dokumentasi</h1>
-      <div className="card max-w-4xl mx-auto">
+    <div className="container mx-auto px-4 py-8 relative">
+      <div className="flex flex-col gap-2 mb-6">
+        <p className="text-sm text-gray-400">Integrasi Otomatis</p>
+        <h1 className="text-3xl font-bold text-blue-400">API Dokumentasi</h1>
+        <p className="text-gray-300 max-w-3xl">Gunakan endpoint resmi domku untuk membuat dan mengelola subdomain secara otomatis. Pastikan sudah masuk agar API key tersimpan.</p>
+      </div>
+      <div className={`card max-w-4xl mx-auto relative ${!user ? 'opacity-50 pointer-events-none' : ''}`}>
         <h2 className="text-lg font-semibold text-blue-300 mb-2">Deskripsi</h2>
         <p className="text-gray-300 mb-4">
           Gunakan API ini untuk membuat dan mengelola subdomain secara otomatis.
@@ -52,6 +60,9 @@ const ApiPage = ({ user }) => {
             </button>
         </pre>
       </div>
+      {showPrompt && !user && (
+        <AuthPrompt onClose={() => setShowPrompt(false)} title="Masuk untuk melihat API" />
+      )}
     </div>
   );
 };
