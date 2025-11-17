@@ -1,11 +1,21 @@
+// api/[...routes].js
 import { supabase } from '../../src/utils/supabaseClient';
 import { createDNSRecord } from '../../src/utils/cloudflareApi';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+  // Ambil path setelah /api
+  const { pathname } = new URL(req.url, `http://${req.headers.host}`);
+  const pathParts = pathname.split('/').filter(Boolean);
+
+  if (pathParts[0] === 'subdomain' && req.method === 'POST') {
+    return handleCreateSubdomain(req, res);
   }
 
+  // Jika tidak cocok, kembalikan 404
+  res.status(404).json({ message: 'Route not found' });
+}
+
+async function handleCreateSubdomain(req, res) {
   const { name, type, content } = req.body;
   const authHeader = req.headers.authorization;
 
@@ -24,7 +34,8 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: 'Invalid API key' });
   }
 
-  const {  userSubs, count } = await supabase
+  // Cek jumlah subdomain yang sudah dibuat oleh user ini
+  const { count } = await supabase
     .from('subdomains')
     .select('*', { count: 'exact' })
     .eq('user_id', user.id);
@@ -36,6 +47,7 @@ export default async function handler(req, res) {
   try {
     const cfRes = await createDNSRecord(`${name}.domku.my.id`, type, content);
     if (cfRes.success) {
+      // Simpan ke database Supabase
       await supabase.from('subdomains').insert([{ user_id: user.id, name: `${name}.domku.my.id`, type, content, cf_id: cfRes.result.id }]);
       res.status(200).json({
         "author": "Aka",
@@ -49,4 +61,11 @@ export default async function handler(req, res) {
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
-    }
+}
+
+// Konfigurasi untuk Vercel
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
