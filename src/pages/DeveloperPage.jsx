@@ -4,7 +4,7 @@ const DeveloperPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-blue-400 mb-6">Info Developer</h1>
-      <div className="flex flex-col items-center max-w-md mx-auto bg-gray-800 p-6 rounded-lg">
+      <div className="flex flex-col items-center max-w-md mx-auto card">
         <img
           src="https://cdn.yupra.my.id/yp/2jz78png.jpg"
           alt="Aka"
