@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createDNSRecord, deleteDNSRecord } from '../utils/cloudflareApi';
 import { supabase } from '../utils/supabaseClient';
 import AuthPrompt from '../components/AuthPrompt';
+import { useToast } from '../context/ToastContext';
 
 const SubdomainPage = ({ user }) => {
   const [subdomain, setSubdomain] = useState('');
@@ -10,6 +11,7 @@ const SubdomainPage = ({ user }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showPrompt, setShowPrompt] = useState(!user);
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -27,7 +29,7 @@ const SubdomainPage = ({ user }) => {
       .select('*')
       .eq('user_id', user.id);
 
-    if (!error) setHistory(data);
+    if (!error && data) setHistory(data);
   };
 
   const handleSubmit = async (e) => {
@@ -36,7 +38,10 @@ const SubdomainPage = ({ user }) => {
       setShowPrompt(true);
       return;
     }
-    if (!subdomain || !recordValue) return;
+    if (!subdomain || !recordValue) {
+      addToast('Lengkapi nama subdomain dan nilai record.', 'error');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -44,22 +49,29 @@ const SubdomainPage = ({ user }) => {
       const res = await createDNSRecord(fullDomain, recordType, recordValue);
 
       if (res.success) {
-        const newRecord = {
+        const { data: saved } = await supabase
+          .from('subdomains')
+          .insert([{ user_id: user.id, name: fullDomain, type: recordType, content: recordValue, cf_id: res.result.id }])
+          .select()
+          .single();
+
+        const newRecord = saved || {
           id: res.result.id,
           name: fullDomain,
           type: recordType,
-          content: recordValue
+          content: recordValue,
+          cf_id: res.result.id,
         };
         setHistory([...history, newRecord]);
-        await supabase.from('subdomains').insert([{ user_id: user.id, name: fullDomain, type: recordType, content: recordValue, cf_id: res.result.id }]);
         setSubdomain('');
         setRecordValue('');
+        addToast('Subdomain berhasil dibuat dan tersimpan.', 'info');
       } else {
-        alert('Gagal membuat subdomain: ' + JSON.stringify(res.errors));
+        addToast('Gagal membuat subdomain, coba lagi.', 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('Error: ' + err.message);
+      addToast(err.message || 'Terjadi kesalahan saat membuat subdomain.', 'error');
     }
     setLoading(false);
   };
@@ -68,11 +80,12 @@ const SubdomainPage = ({ user }) => {
     await deleteDNSRecord(cfId);
     await supabase.from('subdomains').delete().eq('cf_id', cfId);
     setHistory(history.filter(item => item.id !== id));
+    addToast('Subdomain dihapus.', 'info');
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Disalin!');
+    addToast('Tersalin ke clipboard.', 'info');
   };
 
   return (
@@ -92,7 +105,7 @@ const SubdomainPage = ({ user }) => {
                 value={subdomain}
                 onChange={(e) => setSubdomain(e.target.value)}
                 className="input w-full"
-                placeholder="contoh: node"
+                placeholder="contoh: node atau node.aka"
                 disabled={!user}
               />
               {subdomain && <p className="text-sm text-gray-400 mt-1">{subdomain}.domku.my.id</p>}
@@ -121,8 +134,10 @@ const SubdomainPage = ({ user }) => {
               placeholder="contoh: 165.232.166.128"
               disabled={!user}
             />
-            {subdomain && recordType === 'A' && recordValue && (
-              <p className="text-sm text-gray-400 mt-1">{subdomain}.domku.my.id menunjuk ke {recordValue}</p>
+            {subdomain && recordValue && (
+              <p className="text-sm text-gray-400 mt-1">
+                {`${subdomain}.domku.my.id`} menunjuk ke {recordType} {recordValue}
+              </p>
             )}
           </div>
           <button
@@ -143,6 +158,9 @@ const SubdomainPage = ({ user }) => {
       <div className="mt-8">
         <h2 className="text-xl font-semibold text-blue-300 mb-4">Riwayat Subdomain</h2>
         <div className="space-y-3">
+          {history.length === 0 && (
+            <p className="text-sm text-gray-400">Belum ada riwayat. Buat subdomain pertama kamu.</p>
+          )}
           {history.map((item) => (
             <div key={item.id} className="card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>

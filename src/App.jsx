@@ -9,6 +9,7 @@ import SubdomainPage from './pages/SubdomainPage';
 import ApiPage from './pages/ApiPage';
 import DeveloperPage from './pages/DeveloperPage';
 import AuthPage from './pages/AuthPage';
+import { ToastProvider } from './context/ToastContext';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -44,19 +45,21 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-900 text-white">
-      <Navbar setShowSidebar={setShowSidebar} user={user} theme={theme} setTheme={setTheme} />
-      <Sidebar show={showSidebar} setShow={setShowSidebar} user={user} />
-      <main className="pt-16">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/subdomain" element={<SubdomainPage user={user} />} />
-          <Route path="/api" element={<ApiPage user={user} />} />
-          <Route path="/developer" element={<DeveloperPage />} />
-          <Route path="/auth" element={<AuthPage />} />
-        </Routes>
-      </main>
-    </div>
+    <ToastProvider>
+      <div className="min-h-screen bg-dark-900 text-white">
+        <Navbar setShowSidebar={setShowSidebar} user={user} theme={theme} setTheme={setTheme} />
+        <Sidebar show={showSidebar} setShow={setShowSidebar} user={user} />
+        <main className="pt-16">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/subdomain" element={<SubdomainPage user={user} />} />
+            <Route path="/api" element={<ApiPage user={user} />} />
+            <Route path="/developer" element={<DeveloperPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+          </Routes>
+        </main>
+      </div>
+    </ToastProvider>
   );
 }
 

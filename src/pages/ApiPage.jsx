@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import AuthPrompt from '../components/AuthPrompt';
+import { useToast } from '../context/ToastContext';
 
 const ApiPage = ({ user }) => {
   const [showPrompt, setShowPrompt] = useState(!user);
   const currentUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const { addToast } = useToast();
 
   useEffect(() => {
     setShowPrompt(!user);
@@ -35,7 +37,7 @@ const ApiPage = ({ user }) => {
         </ul>
 
         <h2 className="text-lg font-semibold text-blue-300 mb-2">Contoh cURL</h2>
-        <pre className="bg-dark-900 p-4 rounded text-sm text-gray-200 overflow-x-auto relative">
+        <pre className="bg-black p-4 rounded text-sm text-gray-200 overflow-x-auto relative">
             {`{
   "author": "Aka",
   "email_author": "akaanakbaik17@proton.me",`}
@@ -53,7 +55,10 @@ const ApiPage = ({ user }) => {
   }
 }`}
             <button
-              onClick={() => navigator.clipboard.writeText(`curl -X POST "${currentUrl}/api/subdomain" -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{"name":"subdomain_anda","type":"A","content":"165.232.166.128"}'`)}
+              onClick={() => {
+                navigator.clipboard.writeText(`curl -X POST "${currentUrl}/api/subdomain" -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{"name":"subdomain_anda","type":"A","content":"165.232.166.128"}'`);
+                addToast('Contoh cURL disalin.', 'info');
+              }}
               className="absolute top-2 right-2 text-blue-400 hover:text-blue-300"
             >
               Salin

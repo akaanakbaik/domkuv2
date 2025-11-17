@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
 import { generateApiKey } from '../utils/generateApiKey';
+import { useToast } from '../context/ToastContext';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const AuthPage = () => {
   const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -24,6 +26,7 @@ const AuthPage = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         setMessage('Berhasil masuk! Mengalihkan...');
+        addToast('Berhasil masuk.', 'info');
         setTimeout(() => navigate('/subdomain'), 1000);
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
@@ -38,11 +41,13 @@ const AuthPage = () => {
           });
         }
 
-        setMessage('Akun berhasil dibuat! Silakan cek email konfirmasi jika diperlukan.');
+        setMessage('Akun berhasil dibuat! Silakan login untuk melanjutkan.');
+        addToast('Akun berhasil dibuat.', 'info');
         setMode('login');
       }
     } catch (err) {
       setMessage(err.message || 'Terjadi kesalahan.');
+      addToast(err.message || 'Terjadi kesalahan.', 'error');
     } finally {
       setLoading(false);
     }

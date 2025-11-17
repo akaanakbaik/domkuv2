@@ -75,3 +75,12 @@ body {
   box-shadow: none !important;
   background-color: rgba(31, 41, 55, 0.95); /* Ganti ke warna bawaan, misal gray-800 */
 }
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.25s ease-out;
+}
