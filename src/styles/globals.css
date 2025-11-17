@@ -38,23 +38,23 @@ body {
 }
 
 .btn-gray {
-  @apply bg-dark-700 hover:bg-dark-600 text-white;
+  @apply bg-gray-700 hover:bg-gray-600 text-white; /* Ganti ke kelas bawaan */
 }
 
 /* Gaya card tanpa bayangan */
 .card {
-  @apply bg-dark-800 border border-dark-700 rounded-lg p-4;
+  @apply bg-gray-800 border border-gray-700 rounded-lg p-4; /* Ganti ke kelas bawaan */
   box-shadow: none !important;
 }
 
 /* Gaya input tanpa bayangan */
 .input {
-  @apply bg-dark-700 border border-dark-600 rounded px-3 py-2 text-white;
+  @apply bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white; /* Ganti ke kelas bawaan */
   box-shadow: none !important;
 }
 
 /* Gaya sidebar tanpa bayangan */
 .sidebar {
   box-shadow: none !important;
-  background-color: rgba(26, 28, 35, 0.95); /* Agak bening */
+  background-color: rgba(31, 41, 55, 0.95); /* Ganti ke warna bawaan, misal gray-800 */
 }
