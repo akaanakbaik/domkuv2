@@ -50,7 +50,7 @@ const Sidebar = ({ show, setShow, user }) => {
         ></div>
       )}
       <div
-        className={`fixed top-0 right-0 h-1/4 w-1/4 bg-gray-800 border-l border-gray-700 z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-1/4 w-full md:w-1/2 lg:w-1/4 bg-dark-800 border-l border-dark-700 z-50 transform transition-transform duration-300 ease-in-out sidebar ${
           show ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -107,7 +107,7 @@ const Sidebar = ({ show, setShow, user }) => {
                         type="text"
                         value={apiKey}
                         readOnly
-                        className="bg-gray-700 text-xs px-2 py-1 rounded w-32 truncate"
+                        className="bg-dark-700 text-xs px-2 py-1 rounded w-32 truncate"
                       />
                       <button
                         onClick={(e) => { e.stopPropagation(); copyApiKey(); }}
