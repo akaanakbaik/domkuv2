@@ -34,7 +34,7 @@ export const deleteDNSRecord = async (id) => {
 export const listDNSRecords = async () => {
   const response = await fetch(BASE_URL, {
     headers: {
-      'Authorization': `Bearer ${API_TOKEN}',
+      'Authorization': `Bearer ${API_TOKEN}`,
       'Content-Type': 'application/json',
     }
   });
