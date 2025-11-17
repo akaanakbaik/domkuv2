@@ -2,8 +2,8 @@ import React from 'react';
 
 const Loading = () => {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-3.5 bg-gray-900">
-      <div className="loader w-[clamp(32px,8vw,50px)] h-[clamp(32px,8vw,50px)] rounded-full animate-spin-slow shadow-[0_1px_1px_0_#f0f8ff_inset,0_3px_5px_0_#87ceeb_inset,0_4px_4px_0_#00bfff_inset] blur-[0.2px] drop-shadow-[0_0_6px_rgba(0,191,255,0.5)]"></div>
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-3.5 bg-dark-900">
+      <div className="loader w-[clamp(32px,8vw,50px)] h-[clamp(32px,8vw,50px)] rounded-full animate-spin-slow border-t-2 border-blue-500 border-opacity-50"></div>
       <div className="letter-wrapper flex gap-0.5">
         {['L','o','a','d','i','n','g','.','.','.'].map((l, i) => (
           <span key={i} className="text-[clamp(1rem,5vw,1.6rem)] opacity-40 animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}>{l}</span>
