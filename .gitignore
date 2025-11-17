@@ -1,0 +1,8 @@
+node_modules
+Dist
+/dist
+.env
+.env.local
+npm-debug.log*
+yarn-debug.log*
+.pnpm-store

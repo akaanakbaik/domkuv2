@@ -15,6 +15,23 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+:root[data-theme='light'] body, :root[data-theme='light'] {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+:root[data-theme='light'] .card {
+  @apply bg-white text-slate-900 border-slate-200;
+}
+
+:root[data-theme='light'] .input {
+  @apply bg-slate-100 text-slate-900 border-slate-300;
+}
+
+:root[data-theme='light'] .btn-blue {
+  @apply text-white;
+}
+
 /* Animasi global */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out;
@@ -57,4 +74,13 @@ body {
 .sidebar {
   box-shadow: none !important;
   background-color: rgba(31, 41, 55, 0.95); /* Ganti ke warna bawaan, misal gray-800 */
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.25s ease-out;
 }
