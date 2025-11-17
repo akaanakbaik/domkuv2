@@ -17,7 +17,7 @@ function App() {
 
   useEffect(() => {
     const checkSession = async () => {
-      // INI YANG DIPERBAIKI: const {  { session } }
+      // ✅ INI YANG BENAR: Destructure `data` dulu, lalu `session` dari dalamnya
       const {  { session } } = await supabase.auth.getSession();
       if (session) {
         setUser(session.user);
