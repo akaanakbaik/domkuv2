@@ -17,6 +17,7 @@ function App() {
 
   useEffect(() => {
     const checkSession = async () => {
+      // INI YANG DIPERBAIKI: const {  { session } }
       const {  { session } } = await supabase.auth.getSession();
       if (session) {
         setUser(session.user);
@@ -42,7 +43,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-dark-900 text-white">
       <Navbar setShowSidebar={setShowSidebar} />
       <Sidebar show={showSidebar} setShow={setShowSidebar} user={user} />
       <main className="pt-16">
