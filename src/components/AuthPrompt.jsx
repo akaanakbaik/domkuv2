@@ -7,7 +7,7 @@ const AuthPrompt = ({ onClose, title = 'Akses memerlukan akun' }) => {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
-      <div className="relative w-full max-w-md bg-dark-800 border border-dark-700 rounded-2xl p-6 space-y-4 animate-fade-in">
+      <div className="relative w-full max-w-md bg-dark-800 border border-dark-700 rounded-2xl p-6 shadow-2xl space-y-4 animate-fade-in">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs uppercase tracking-wide text-gray-400">Keamanan</p>
