@@ -7,6 +7,7 @@ const Sidebar = ({ show, setShow, user }) => {
   const [userData, setUserData] = useState(null);
   const [apiKey, setApiKey] = useState('');
   const [showAccountActions, setShowAccountActions] = useState(false);
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -41,7 +42,8 @@ const Sidebar = ({ show, setShow, user }) => {
   const copyApiKey = () => {
     if (!apiKey) return;
     navigator.clipboard.writeText(apiKey);
-    alert('API Key disalin!');
+    setToast('API key disalin');
+    setTimeout(() => setToast(''), 1500);
   };
 
   const truncateName = (name) => (name && name.length > 16 ? name.substring(0, 16) + '...' : name);
@@ -60,8 +62,15 @@ const Sidebar = ({ show, setShow, user }) => {
           onClick={() => setShow(false)}
         ></div>
       )}
+      {toast && (
+        <div className="fixed top-4 right-4 z-[60] animate-fade-in">
+          <div className="bg-surface-alt border border-stroke text-sm px-4 py-2 rounded-lg shadow-sm text-white">
+            {toast}
+          </div>
+        </div>
+      )}
       <div
-        className={`fixed top-4 right-4 w-1/2 max-w-md min-w-[260px] sm:w-[320px] lg:w-[28vw] h-1/2 max-h-[60vh] bg-surface/95 border border-stroke rounded-2xl z-50 transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
+        className={`fixed top-4 right-4 w-[92vw] sm:w-[70vw] md:w-[55vw] lg:w-[32vw] max-w-xl min-w-[260px] max-h-[78vh] bg-surface/95 border border-stroke rounded-2xl z-50 transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
           show ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'
         }`}
       >
@@ -82,26 +91,25 @@ const Sidebar = ({ show, setShow, user }) => {
           </div>
 
           {user && userData ? (
-            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-3">
-              <div className="flex items-center gap-3">
+            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-3 relative">
+              <div className="flex items-center gap-3" onClick={() => setShowAccountActions(true)}>
                 <img
-                  src={`https://robohash.org/${user.email}?size=48x48&set=set4`}
+                  src={`https://robohash.org/${user.email}?size=64x64&set=set4`}
                   alt="Avatar"
-                  className="w-12 h-12 rounded-full"
-                  onClick={() => setShowAccountActions((prev) => !prev)}
+                  className="w-14 h-14 rounded-full border border-stroke cursor-pointer"
                 />
                 <div>
-                  <p className="text-sm text-gray-400">Masuk sebagai</p>
+                  <p className="text-sm text-gray-400">Akun aktif</p>
                   <p className="text-lg font-semibold">{truncateName(userData.username || user.email)}</p>
                   <p className="text-xs text-gray-400">{user.email}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-green-400">
                 <span className="h-2 w-2 rounded-full bg-green-400"></span>
-                <span>Akun aktif & siap membuat subdomain</span>
+                <span>Login berhasil, siap membuat subdomain</span>
               </div>
               {apiKey && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="text"
                     value={apiKey}
@@ -109,7 +117,7 @@ const Sidebar = ({ show, setShow, user }) => {
                     className="bg-surface text-xs px-2 py-1 rounded w-full truncate border border-stroke"
                   />
                   <button
-                    onClick={(e) => { e.stopPropagation(); copyApiKey(); }}
+                    onClick={copyApiKey}
                     className="px-3 py-1 text-xs rounded bg-accent text-white"
                   >
                     Salin
@@ -117,11 +125,24 @@ const Sidebar = ({ show, setShow, user }) => {
                 </div>
               )}
               {showAccountActions && (
-                <div className="mt-3 space-y-2 text-sm">
-                  <p className="text-gray-300">Kelola akun</p>
-                  <div className="flex gap-2">
-                    <button className="flex-1 rounded bg-surface px-3 py-2 border border-stroke" onClick={handleLogout}>Keluar</button>
-                    <button className="flex-1 rounded bg-surface px-3 py-2 border border-stroke" onClick={() => setShowAccountActions(false)}>Batal</button>
+                <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
+                  <div className="absolute inset-0 bg-black/50" onClick={() => setShowAccountActions(false)}></div>
+                  <div className="relative w-full max-w-sm bg-surface border border-stroke rounded-xl p-5 space-y-3 animate-fade-in">
+                    <p className="text-sm text-gray-300">Kelola akun kamu</p>
+                    <div className="space-y-2 text-sm">
+                      <button
+                        className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
+                        onClick={handleLogout}
+                      >
+                        Keluar / Logout
+                      </button>
+                      <button
+                        className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
+                        onClick={() => setShowAccountActions(false)}
+                      >
+                        Batal
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

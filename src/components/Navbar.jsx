@@ -36,6 +36,14 @@ const Navbar = ({ setShowSidebar, user, theme, setTheme }) => {
             </button>
           </div>
         )}
+        {!user && (
+          <button
+            onClick={() => navigate('/auth', { state: { mode: 'login' } })}
+            className="sm:hidden px-3 py-2 rounded-lg bg-accent text-white text-sm"
+          >
+            Masuk
+          </button>
+        )}
         <button
           onClick={toggleTheme}
           className="hidden sm:inline-flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-stroke text-foreground"
