@@ -153,111 +153,115 @@ const Sidebar = ({ show, setShow, user }) => {
             </button>
           </div>
 
-          {user && userData ? (
-            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-4 relative">
-              <div className="flex items-center gap-3">
-                {renderAvatar()}
-                <div>
-                  <p className="text-sm text-gray-400">Akun aktif</p>
-                  <p className="text-lg font-semibold">{truncateName(userData.username || user.email)}</p>
-                  <p className="text-xs text-gray-400">{user.email}</p>
+          <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-4 relative">
+            <div className="flex items-center gap-3">
+              {user && userData ? (
+                renderAvatar()
+              ) : (
+                <div className="w-14 h-14 rounded-full border border-stroke bg-surface text-gray-400 flex items-center justify-center text-lg font-semibold">
+                  ?
                 </div>
+              )}
+              <div>
+                <p className="text-sm text-gray-400">{user ? 'Akun aktif' : 'Belum masuk'}</p>
+                <p className="text-lg font-semibold">
+                  {user && userData ? truncateName(userData.username || user.email) : 'Masuk atau daftar dulu'}
+                </p>
+                <p className="text-xs text-gray-400">{user && userData ? user.email : 'Kamu perlu login untuk menampilkan info akun'}</p>
               </div>
-              <div className="flex items-center gap-2 text-xs text-green-400">
-                <span className="h-2 w-2 rounded-full bg-green-400"></span>
-                <span>Login berhasil, siap membuat subdomain</span>
+            </div>
+
+            <div className={`flex items-center gap-2 text-xs ${user ? 'text-green-400' : 'text-gray-400'}`}>
+              <span className={`h-2 w-2 rounded-full ${user ? 'bg-green-400' : 'bg-gray-500'}`}></span>
+              <span>{user ? 'Login berhasil, siap membuat subdomain' : 'Masuk untuk mengakses API key dan manajemen akun'}</span>
+            </div>
+
+            <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+              <p className="text-sm text-gray-300">API Key akun kamu</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={user ? apiKey : ''}
+                  readOnly
+                  disabled={!user}
+                  className="bg-surface text-xs px-2 py-2 rounded w-full truncate border border-stroke disabled:opacity-60"
+                  placeholder={user ? 'API key belum tersedia' : 'Login untuk mendapatkan API key pribadi'}
+                />
+                <button
+                  onClick={user ? copyApiKey : () => handleNavigate('/auth')}
+                  className={`px-3 py-2 text-xs rounded ${user ? 'bg-accent text-white' : 'bg-surface text-gray-400 border border-stroke'}`}
+                >
+                  {user ? 'Salin' : 'Masuk'}
+                </button>
               </div>
-              <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                <p className="text-sm text-gray-300">API Key akun kamu</p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={apiKey}
-                    readOnly
-                    className="bg-surface text-xs px-2 py-2 rounded w-full truncate border border-stroke"
-                    placeholder="API key belum tersedia"
-                  />
-                  <button
-                    onClick={copyApiKey}
-                    className="px-3 py-2 text-xs rounded bg-accent text-white"
-                  >
-                    Salin
-                  </button>
-                </div>
-                <p className="text-[11px] text-gray-400">Gunakan API key ini untuk memanggil layanan API kamu. Jaga kerahasiaannya.</p>
-              </div>
-              <div className="flex justify-end">
+              <p className="text-[11px] text-gray-400">
+                {user
+                  ? 'Gunakan API key ini untuk memanggil layanan API kamu. Jaga kerahasiaannya.'
+                  : 'Masuk atau daftar terlebih dahulu untuk membuat dan menyimpan API key pribadimu.'}
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => handleNavigate('/auth')}
+                className="px-4 py-2 text-sm rounded-lg border border-stroke text-foreground hover:border-accent"
+              >
+                {user ? 'Ganti akun' : 'Masuk / Daftar'}
+              </button>
+              {user && (
                 <button
                   onClick={() => setShowAccountActions(true)}
                   className="px-4 py-2 text-sm rounded-lg border border-stroke text-foreground hover:border-accent"
                 >
                   Kelola akun
                 </button>
-              </div>
-
-              {showAccountActions && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
-                  <div className="absolute inset-0 bg-black/30" onClick={() => setShowAccountActions(false)}></div>
-                  <div className="relative w-full max-w-xs bg-surface border border-stroke rounded-xl p-4 space-y-4 animate-fade-in shadow-none">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm text-gray-300">Kelola akun kamu</p>
-                        <p className="text-lg font-semibold">Manajemen akun</p>
-                      </div>
-                      <button
-                        onClick={() => setShowAccountActions(false)}
-                        className="text-gray-400 hover:text-white"
-                        aria-label="Tutup"
-                      >
-                        ×
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                      Kelola sesi kamu, keluar dari akun, atau hapus akun secara permanen. Pastikan sudah menyimpan data penting sebelum melanjutkan.
-                    </p>
-                    <div className="space-y-2 text-sm">
-                      <button
-                        className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
-                        onClick={handleLogout}
-                      >
-                        Keluar / Logout
-                      </button>
-                      <button
-                        className="w-full rounded-lg bg-red-600/10 border border-red-500/40 px-3 py-2 text-left text-red-200 hover:border-red-400"
-                        onClick={handleDeleteAccount}
-                      >
-                        Hapus akun
-                      </button>
-                      <button
-                        className="w-full rounded-lg border border-stroke px-3 py-2 text-left hover:border-accent"
-                        onClick={() => setShowAccountActions(false)}
-                      >
-                        Tutup
-                      </button>
-                    </div>
-                  </div>
-                </div>
               )}
             </div>
-          ) : (
-            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-3">
-              <p className="text-sm text-gray-300">Belum masuk? Daftar atau login untuk menyimpan subdomain dan API key kamu.</p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => handleNavigate('/auth')}
-                  className="btn btn-blue flex-1 min-w-[120px] text-center"
-                >
-                  Masuk / Daftar
-                </button>
-                <button
-                  onClick={() => handleNavigate('/developer')}
-                  className="btn btn-gray flex-1 min-w-[120px] text-center"
-                >
-                  Lihat info dev
-                </button>
+
+            {user && showAccountActions && (
+              <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
+                <div className="absolute inset-0 bg-black/30" onClick={() => setShowAccountActions(false)}></div>
+                <div className="relative w-full max-w-xs bg-surface border border-stroke rounded-xl p-4 space-y-4 animate-fade-in shadow-none">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-gray-300">Kelola akun kamu</p>
+                      <p className="text-lg font-semibold">Manajemen akun</p>
+                    </div>
+                    <button
+                      onClick={() => setShowAccountActions(false)}
+                      className="text-gray-400 hover:text-white"
+                      aria-label="Tutup"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    Kelola sesi kamu, keluar dari akun, atau hapus akun secara permanen. Pastikan sudah menyimpan data penting sebelum melanjutkan.
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <button
+                      className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
+                      onClick={handleLogout}
+                    >
+                      Keluar / Logout
+                    </button>
+                    <button
+                      className="w-full rounded-lg bg-red-600/10 border border-red-500/40 px-3 py-2 text-left text-red-200 hover:border-red-400"
+                      onClick={handleDeleteAccount}
+                    >
+                      Hapus akun
+                    </button>
+                    <button
+                      className="w-full rounded-lg border border-stroke px-3 py-2 text-left hover:border-accent"
+                      onClick={() => setShowAccountActions(false)}
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="grid grid-cols-1 gap-2">
             <button
