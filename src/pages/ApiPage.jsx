@@ -27,7 +27,10 @@ const ApiPage = ({ user }) => {
   }
 }`;
 
-  const curlCommand = `curl -X POST "${currentUrl}/api/subdomain" -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{"name":"subdomain_anda","type":"A","content":"165.232.166.128"}'`;
+  const curlCommand = `curl -X POST "${currentUrl}/api/subdomain" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"subdomain_anda","type":"A","content":"165.232.166.128"}'`;
 
   return (
     <div className="container mx-auto px-4 py-8 relative">
@@ -54,10 +57,26 @@ const ApiPage = ({ user }) => {
           <li>Gunakan API dengan bijak</li>
         </ul>
 
+        <h2 className="text-lg font-semibold text-blue-300 mb-2">Contoh payload</h2>
+        <div className="relative mb-4">
+          <pre className="bg-black p-4 rounded text-sm text-gray-200 overflow-x-auto">
+            <code>{payloadExample}</code>
+          </pre>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(payloadExample);
+              addToast('Payload disalin.', 'info');
+            }}
+            className="absolute top-2 right-2 text-blue-400 hover:text-blue-300 text-xs bg-dark-700 px-3 py-1 rounded"
+          >
+            Salin
+          </button>
+        </div>
+
         <h2 className="text-lg font-semibold text-blue-300 mb-2">Contoh cURL</h2>
         <div className="relative">
           <pre className="bg-black p-4 rounded text-sm text-gray-200 overflow-x-auto">
-            <code>{payloadExample}</code>
+            <code>{curlCommand}</code>
           </pre>
           <button
             onClick={() => {
