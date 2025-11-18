@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
 
@@ -7,6 +7,9 @@ const Sidebar = ({ show, setShow, user }) => {
   const [userData, setUserData] = useState(null);
   const [apiKey, setApiKey] = useState('');
   const [showAccountActions, setShowAccountActions] = useState(false);
+  const [toast, setToast] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+  const touchStart = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (user) {
@@ -32,24 +35,73 @@ const Sidebar = ({ show, setShow, user }) => {
     if (data.api_key) setApiKey(data.api_key);
   };
 
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    setActionLoading(true);
+    await Promise.all([supabase.auth.signOut(), delay(1500)]);
     setShow(false);
     setShowAccountActions(false);
+    setActionLoading(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setActionLoading(true);
+    await delay(1500);
+    try {
+      await supabase.from('subdomains').delete().eq('user_id', user.id);
+      await supabase.from('users').delete().eq('id', user.id);
+      await supabase.auth.signOut();
+      setToast('Akun dihapus');
+      setTimeout(() => setToast(''), 1600);
+    } catch (error) {
+      console.error('Error deleting account', error);
+      setToast('Gagal hapus akun');
+      setTimeout(() => setToast(''), 1600);
+    } finally {
+      setShow(false);
+      setShowAccountActions(false);
+      setActionLoading(false);
+    }
   };
 
   const copyApiKey = () => {
     if (!apiKey) return;
     navigator.clipboard.writeText(apiKey);
-    alert('API Key disalin!');
+    setToast('API key disalin');
+    setTimeout(() => setToast(''), 1600);
   };
 
   const truncateName = (name) => (name && name.length > 16 ? name.substring(0, 16) + '...' : name);
 
   const handleNavigate = (path) => {
-    navigate(path);
-    setShow(false);
-    setShowAccountActions(false);
+    setActionLoading(true);
+    setTimeout(() => {
+      navigate(path);
+      setShow(false);
+      setShowAccountActions(false);
+      setActionLoading(false);
+    }, 1500);
+  };
+
+  const handleToastTouchStart = (e) => {
+    const touch = e.touches[0];
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleToastTouchMove = (e) => {
+    const touch = e.touches[0];
+    const dx = Math.abs(touch.clientX - touchStart.current.x);
+    const dy = Math.abs(touch.clientY - touchStart.current.y);
+    if (dx > 30 || dy > 30) {
+      setToast('');
+    }
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name.trim().charAt(0).toUpperCase();
   };
 
   return (
@@ -60,8 +112,20 @@ const Sidebar = ({ show, setShow, user }) => {
           onClick={() => setShow(false)}
         ></div>
       )}
+      {toast && (
+        <div className="fixed top-4 right-4 z-[60] animate-fade-in" onTouchStart={handleToastTouchStart} onTouchMove={handleToastTouchMove}>
+          <div className="bg-surface-alt border border-stroke text-sm px-4 py-2 rounded-lg shadow-sm text-white">
+            {toast}
+          </div>
+        </div>
+      )}
+      {actionLoading && (
+        <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/55 backdrop-blur-sm">
+          <div className="h-12 w-12 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
       <div
-        className={`fixed top-4 right-4 w-1/2 max-w-md min-w-[260px] sm:w-[320px] lg:w-[28vw] h-1/2 max-h-[60vh] bg-surface/95 border border-stroke rounded-2xl z-50 transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
+        className={`fixed top-4 right-4 w-[92vw] sm:w-[70vw] md:w-[55vw] lg:w-[32vw] max-w-xl min-w-[260px] max-h-[78vh] bg-surface/95 border border-stroke rounded-2xl z-50 transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
           show ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'
         }`}
       >
@@ -82,46 +146,79 @@ const Sidebar = ({ show, setShow, user }) => {
           </div>
 
           {user && userData ? (
-            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <img
-                  src={`https://robohash.org/${user.email}?size=48x48&set=set4`}
-                  alt="Avatar"
-                  className="w-12 h-12 rounded-full"
-                  onClick={() => setShowAccountActions((prev) => !prev)}
-                />
+            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-4 relative">
+              <div className="flex items-center gap-3" onClick={() => setShowAccountActions(true)}>
+                {userData.avatar_url ? (
+                  <img
+                    src={userData.avatar_url}
+                    alt="Avatar"
+                    className="w-14 h-14 rounded-full border border-stroke cursor-pointer object-cover"
+                  />
+                ) : (
+                  <div className="w-14 h-14 rounded-full border border-stroke cursor-pointer bg-accent/20 text-accent font-semibold text-xl flex items-center justify-center">
+                    {getInitials(userData.username || user.email)}
+                  </div>
+                )}
                 <div>
-                  <p className="text-sm text-gray-400">Masuk sebagai</p>
+                  <p className="text-sm text-gray-400">Akun aktif</p>
                   <p className="text-lg font-semibold">{truncateName(userData.username || user.email)}</p>
                   <p className="text-xs text-gray-400">{user.email}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-green-400">
                 <span className="h-2 w-2 rounded-full bg-green-400"></span>
-                <span>Akun aktif & siap membuat subdomain</span>
+                <span>Login berhasil, siap membuat subdomain</span>
               </div>
               {apiKey && (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={apiKey}
-                    readOnly
-                    className="bg-surface text-xs px-2 py-1 rounded w-full truncate border border-stroke"
-                  />
-                  <button
-                    onClick={(e) => { e.stopPropagation(); copyApiKey(); }}
-                    className="px-3 py-1 text-xs rounded bg-accent text-white"
-                  >
-                    Salin
-                  </button>
+                <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
+                  <p className="text-xs text-gray-400">API key aktif kamu</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={apiKey}
+                      readOnly
+                      className="bg-surface text-xs px-2 py-1 rounded w-full truncate border border-stroke"
+                    />
+                    <button
+                      onClick={copyApiKey}
+                      className="px-3 py-1 text-xs rounded bg-accent text-white"
+                    >
+                      Salin
+                    </button>
+                  </div>
                 </div>
               )}
+              <button
+                onClick={() => setShowAccountActions(true)}
+                className="w-full rounded-lg bg-surface text-sm border border-stroke px-3 py-2 hover:border-accent text-left"
+              >
+                Kelola akun
+              </button>
               {showAccountActions && (
-                <div className="mt-3 space-y-2 text-sm">
-                  <p className="text-gray-300">Kelola akun</p>
-                  <div className="flex gap-2">
-                    <button className="flex-1 rounded bg-surface px-3 py-2 border border-stroke" onClick={handleLogout}>Keluar</button>
-                    <button className="flex-1 rounded bg-surface px-3 py-2 border border-stroke" onClick={() => setShowAccountActions(false)}>Batal</button>
+                <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
+                  <div className="absolute inset-0 bg-black/30" onClick={() => setShowAccountActions(false)}></div>
+                  <div className="relative w-full max-w-xs bg-surface border border-stroke rounded-xl p-4 space-y-3 animate-fade-in shadow-xl">
+                    <p className="text-sm text-gray-300">Kelola akun kamu</p>
+                    <div className="space-y-2 text-sm">
+                      <button
+                        className="w-full rounded-lg bg-red-600/90 text-white border border-red-500 px-3 py-2 text-left hover:bg-red-600"
+                        onClick={handleDeleteAccount}
+                      >
+                        Hapus akun
+                      </button>
+                      <button
+                        className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
+                        onClick={handleLogout}
+                      >
+                        Keluar / Logout
+                      </button>
+                      <button
+                        className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
+                        onClick={() => setShowAccountActions(false)}
+                      >
+                        Tutup
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -177,14 +274,6 @@ const Sidebar = ({ show, setShow, user }) => {
             </button>
           </div>
 
-          {user && (
-            <button
-              onClick={handleLogout}
-              className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm"
-            >
-              Keluar
-            </button>
-          )}
         </div>
       </div>
     </>

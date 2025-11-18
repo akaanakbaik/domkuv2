@@ -38,7 +38,7 @@ const AuthPage = () => {
           });
         }
 
-        setMessage('Akun berhasil dibuat! Silakan cek email konfirmasi jika diperlukan.');
+        setMessage('Akun berhasil dibuat! Silakan login untuk mulai memakai domku.');
         setMode('login');
       }
     } catch (err) {

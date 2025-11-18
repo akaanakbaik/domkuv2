@@ -21,6 +21,11 @@ const ApiPage = ({ user }) => {
         <p className="text-gray-300 mb-4">
           Gunakan API ini untuk membuat dan mengelola subdomain secara otomatis.
         </p>
+        {!user && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="bg-dark-900/80 border border-dark-700 text-sm text-center px-4 py-2 rounded-lg">Masuk atau daftar dulu untuk melihat kunci API.</p>
+          </div>
+        )}
 
         <h2 className="text-lg font-semibold text-blue-300 mb-2">Batasan</h2>
         <ul className="list-disc list-inside text-gray-300 mb-4 space-y-1">
