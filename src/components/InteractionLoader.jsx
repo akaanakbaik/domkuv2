@@ -1,14 +1,22 @@
 import React from 'react';
 
-const InteractionLoader = ({ message = 'Memproses permintaan kamu...' }) => {
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="bg-surface border border-stroke rounded-xl px-6 py-5 flex flex-col items-center gap-3 shadow-none">
-        <div className="w-12 h-12 border-4 border-accent/20 border-t-accent rounded-full animate-spin"></div>
-        <p className="text-sm text-gray-200 text-center">{message}</p>
-      </div>
+const InteractionLoader = ({ message = 'Memproses permintaan kamu...' }) => (
+  <div className="app-loader-wrapper" role="status" aria-live="polite">
+    <div className="app-loader" aria-hidden="true"></div>
+    <div className="app-loader-letters" aria-hidden="true">
+      <span className="app-loader-letter">L</span>
+      <span className="app-loader-letter">o</span>
+      <span className="app-loader-letter">a</span>
+      <span className="app-loader-letter">d</span>
+      <span className="app-loader-letter">i</span>
+      <span className="app-loader-letter">n</span>
+      <span className="app-loader-letter">g</span>
+      <span className="app-loader-letter">.</span>
+      <span className="app-loader-letter">.</span>
+      <span className="app-loader-letter">.</span>
     </div>
-  );
-};
+    <p className="text-sm text-gray-200 text-center px-4">{message}</p>
+  </div>
+);
 
 export default InteractionLoader;

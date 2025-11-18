@@ -168,7 +168,7 @@ const Sidebar = ({ show, setShow, user }) => {
                 <span>Login berhasil, siap membuat subdomain</span>
               </div>
               <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                <p className="text-sm text-gray-300">API Key kamu</p>
+                <p className="text-sm text-gray-300">API Key akun kamu</p>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
@@ -184,6 +184,7 @@ const Sidebar = ({ show, setShow, user }) => {
                     Salin
                   </button>
                 </div>
+                <p className="text-[11px] text-gray-400">Gunakan API key ini untuk memanggil layanan API kamu. Jaga kerahasiaannya.</p>
               </div>
               <div className="flex justify-end">
                 <button
@@ -197,7 +198,7 @@ const Sidebar = ({ show, setShow, user }) => {
               {showAccountActions && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
                   <div className="absolute inset-0 bg-black/30" onClick={() => setShowAccountActions(false)}></div>
-                  <div className="relative w-full max-w-xs bg-surface border border-stroke rounded-xl p-4 space-y-3 animate-fade-in">
+                  <div className="relative w-full max-w-xs bg-surface border border-stroke rounded-xl p-4 space-y-4 animate-fade-in shadow-none">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-sm text-gray-300">Kelola akun kamu</p>
@@ -211,6 +212,9 @@ const Sidebar = ({ show, setShow, user }) => {
                         ×
                       </button>
                     </div>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Kelola sesi kamu, keluar dari akun, atau hapus akun secara permanen. Pastikan sudah menyimpan data penting sebelum melanjutkan.
+                    </p>
                     <div className="space-y-2 text-sm">
                       <button
                         className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
@@ -223,6 +227,12 @@ const Sidebar = ({ show, setShow, user }) => {
                         onClick={handleDeleteAccount}
                       >
                         Hapus akun
+                      </button>
+                      <button
+                        className="w-full rounded-lg border border-stroke px-3 py-2 text-left hover:border-accent"
+                        onClick={() => setShowAccountActions(false)}
+                      >
+                        Tutup
                       </button>
                     </div>
                   </div>
