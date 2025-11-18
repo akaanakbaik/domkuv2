@@ -4,13 +4,13 @@ const DeveloperPage = () => {
   return (
     <div className="container mx-auto px-4 py-10">
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
-        <div className="bg-gradient-to-br from-blue-700/30 to-purple-700/20 border border-dark-700 rounded-2xl p-6 shadow-lg">
+        <div className="border border-stroke rounded-2xl p-6 bg-surface">
           <p className="text-sm text-gray-300">Kenalan dulu</p>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-3">
             <img
               src="https://cdn.yupra.my.id/yp/2jz78png.jpg"
               alt="Aka"
-              className="w-24 h-24 rounded-full object-cover border-2 border-blue-500 shadow"
+              className="w-24 h-24 rounded-full object-cover border-2 border-stroke"
             />
             <div className="space-y-2">
               <h1 className="text-3xl font-bold text-white">Aka</h1>
