@@ -24,14 +24,19 @@ const Sidebar = ({ show, setShow, user }) => {
       .from('users')
       .select('username, api_key')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching user ', error);
+      setUserData({ username: user.email.split('@')[0], email: user.email });
       return;
     }
-    setUserData(data);
-    if (data.api_key) setApiKey(data.api_key);
+
+    const fallbackUser = { username: user.email.split('@')[0], email: user.email };
+    const mergedUser = data ? { ...fallbackUser, ...data } : fallbackUser;
+
+    setUserData(mergedUser);
+    if (mergedUser.api_key) setApiKey(mergedUser.api_key);
   };
 
   const handleLogout = async () => {

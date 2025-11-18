@@ -79,7 +79,7 @@ const SubdomainPage = ({ user }) => {
   const handleDelete = async (id, cfId) => {
     await deleteDNSRecord(cfId);
     await supabase.from('subdomains').delete().eq('cf_id', cfId);
-    setHistory(history.filter(item => item.id !== id));
+    setHistory(history.filter((item) => item.cf_id !== cfId && item.id !== id));
     addToast('Subdomain dihapus.', 'info');
   };
 
