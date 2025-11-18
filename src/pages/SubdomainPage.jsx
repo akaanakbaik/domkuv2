@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createDNSRecord, deleteDNSRecord } from '../utils/cloudflareApi';
 import { supabase } from '../utils/supabaseClient';
 import AuthPrompt from '../components/AuthPrompt';
+import InteractionLoader from '../components/InteractionLoader';
+import Toast from '../components/Toast';
+import { useTimedLoader } from '../utils/useTimedLoader';
 
 const SubdomainPage = ({ user }) => {
   const [subdomain, setSubdomain] = useState('');
@@ -11,6 +14,7 @@ const SubdomainPage = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [showPrompt, setShowPrompt] = useState(!user);
   const [toast, setToast] = useState('');
+  const { active: blocking, start: startBlocking, stop: stopBlocking } = useTimedLoader(1500);
 
   useEffect(() => {
     if (user) {
@@ -39,6 +43,7 @@ const SubdomainPage = ({ user }) => {
     }
     if (!subdomain || !recordValue) return;
 
+    startBlocking();
     setLoading(true);
     try {
       const fullDomain = `${subdomain}.domku.my.id`;
@@ -56,7 +61,6 @@ const SubdomainPage = ({ user }) => {
         setSubdomain('');
         setRecordValue('');
         setToast('Subdomain dibuat');
-        setTimeout(() => setToast(''), 1500);
       } else {
         setToast('Gagal membuat subdomain');
       }
@@ -65,18 +69,26 @@ const SubdomainPage = ({ user }) => {
       setToast(err.message || 'Terjadi kesalahan');
     }
     setLoading(false);
+    stopBlocking();
   };
 
   const handleDelete = async (id, cfId) => {
-    await deleteDNSRecord(cfId);
-    await supabase.from('subdomains').delete().eq('cf_id', cfId);
-    setHistory(history.filter(item => item.id !== id));
+    startBlocking();
+    try {
+      await deleteDNSRecord(cfId);
+      await supabase.from('subdomains').delete().eq('cf_id', cfId);
+      setHistory(history.filter(item => item.id !== id));
+      setToast('Subdomain dihapus');
+    } catch (error) {
+      console.error(error);
+      setToast('Gagal menghapus subdomain');
+    }
+    stopBlocking();
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     setToast('Disalin ke clipboard');
-    setTimeout(() => setToast(''), 1500);
   };
 
   return (
@@ -171,13 +183,8 @@ const SubdomainPage = ({ user }) => {
           ))}
         </div>
       </div>
-      {toast && (
-        <div className="fixed bottom-6 right-4 sm:right-8 z-40 animate-fade-in">
-          <div className="bg-surface-alt border border-stroke text-sm px-4 py-2 rounded-lg shadow-sm text-white">
-            {toast}
-          </div>
-        </div>
-      )}
+      <Toast message={toast} position="bottom-right" onClose={() => setToast('')} />
+      {blocking && <InteractionLoader message="Memproses perubahan subdomain..." />}
       {showPrompt && !user && <AuthPrompt onClose={() => setShowPrompt(false)} title="Harus login dulu" />}
     </div>
   );

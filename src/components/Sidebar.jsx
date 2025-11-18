@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
+import { generateApiKey } from '../utils/generateApiKey';
+import InteractionLoader from './InteractionLoader';
+import Toast from './Toast';
+import { useTimedLoader } from '../utils/useTimedLoader';
 
 const Sidebar = ({ show, setShow, user }) => {
   const navigate = useNavigate();
@@ -8,6 +12,7 @@ const Sidebar = ({ show, setShow, user }) => {
   const [apiKey, setApiKey] = useState('');
   const [showAccountActions, setShowAccountActions] = useState(false);
   const [toast, setToast] = useState('');
+  const { active: blocking, start: startBlocking, stop: stopBlocking } = useTimedLoader(1500);
 
   useEffect(() => {
     if (user) {
@@ -19,31 +24,75 @@ const Sidebar = ({ show, setShow, user }) => {
   }, [user]);
 
   const fetchUserData = async () => {
+    startBlocking();
     const { data, error } = await supabase
       .from('users')
-      .select('username, api_key')
+      .select('username, api_key, avatar_url')
       .eq('id', user.id)
       .single();
 
     if (error) {
       console.error('Error fetching user ', error);
+      stopBlocking();
       return;
     }
-    setUserData(data);
-    if (data.api_key) setApiKey(data.api_key);
+
+    const username = data?.username || user.email.split('@')[0];
+    let storedKey = data?.api_key;
+
+    if (!storedKey) {
+      storedKey = generateApiKey();
+      const { error: updateError } = await supabase.from('users').upsert({
+        id: user.id,
+        username,
+        api_key: storedKey,
+        avatar_url: data?.avatar_url || null,
+      });
+
+      if (updateError) {
+        console.error('Error saving api key', updateError);
+      }
+    }
+
+    setUserData({ ...data, username });
+    if (storedKey) setApiKey(storedKey);
+    stopBlocking();
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setShow(false);
+    startBlocking();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out', error);
+      setToast('Gagal logout, coba lagi');
+    } else {
+      setShow(false);
+      setShowAccountActions(false);
+      setToast('Kamu sudah logout');
+    }
+    stopBlocking();
+  };
+
+  const handleDeleteAccount = async () => {
+    startBlocking();
+    try {
+      await supabase.from('subdomains').delete().eq('user_id', user.id);
+      await supabase.from('users').delete().eq('id', user.id);
+      await supabase.auth.signOut();
+      setToast('Akun dihapus');
+      setShow(false);
+    } catch (error) {
+      console.error('Error deleting account', error);
+      setToast('Gagal hapus akun');
+    }
     setShowAccountActions(false);
+    stopBlocking();
   };
 
   const copyApiKey = () => {
     if (!apiKey) return;
     navigator.clipboard.writeText(apiKey);
     setToast('API key disalin');
-    setTimeout(() => setToast(''), 1500);
   };
 
   const truncateName = (name) => (name && name.length > 16 ? name.substring(0, 16) + '...' : name);
@@ -54,21 +103,35 @@ const Sidebar = ({ show, setShow, user }) => {
     setShowAccountActions(false);
   };
 
+  const renderAvatar = () => {
+    const letter = (userData?.username || user?.email || 'D')[0]?.toUpperCase();
+    if (userData?.avatar_url) {
+      return (
+        <img
+          src={userData.avatar_url}
+          alt="Avatar"
+          className="w-14 h-14 rounded-full border border-stroke object-cover"
+        />
+      );
+    }
+
+    return (
+      <div className="w-14 h-14 rounded-full border border-stroke bg-accent/20 text-accent flex items-center justify-center text-lg font-semibold">
+        {letter}
+      </div>
+    );
+  };
+
   return (
     <>
+      {blocking && <InteractionLoader message="Memuat data akun..." />}
       {show && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
           onClick={() => setShow(false)}
         ></div>
       )}
-      {toast && (
-        <div className="fixed top-4 right-4 z-[60] animate-fade-in">
-          <div className="bg-surface-alt border border-stroke text-sm px-4 py-2 rounded-lg shadow-sm text-white">
-            {toast}
-          </div>
-        </div>
-      )}
+      <Toast message={toast} onClose={() => setToast('')} />
       <div
         className={`fixed top-4 right-4 w-[92vw] sm:w-[70vw] md:w-[55vw] lg:w-[32vw] max-w-xl min-w-[260px] max-h-[78vh] bg-surface/95 border border-stroke rounded-2xl z-50 transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
           show ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'
@@ -91,13 +154,9 @@ const Sidebar = ({ show, setShow, user }) => {
           </div>
 
           {user && userData ? (
-            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-3 relative">
-              <div className="flex items-center gap-3" onClick={() => setShowAccountActions(true)}>
-                <img
-                  src={`https://robohash.org/${user.email}?size=64x64&set=set4`}
-                  alt="Avatar"
-                  className="w-14 h-14 rounded-full border border-stroke cursor-pointer"
-                />
+            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-4 relative">
+              <div className="flex items-center gap-3">
+                {renderAvatar()}
                 <div>
                   <p className="text-sm text-gray-400">Akun aktif</p>
                   <p className="text-lg font-semibold">{truncateName(userData.username || user.email)}</p>
@@ -108,27 +167,50 @@ const Sidebar = ({ show, setShow, user }) => {
                 <span className="h-2 w-2 rounded-full bg-green-400"></span>
                 <span>Login berhasil, siap membuat subdomain</span>
               </div>
-              {apiKey && (
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                <p className="text-sm text-gray-300">API Key kamu</p>
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={apiKey}
                     readOnly
-                    className="bg-surface text-xs px-2 py-1 rounded w-full truncate border border-stroke"
+                    className="bg-surface text-xs px-2 py-2 rounded w-full truncate border border-stroke"
+                    placeholder="API key belum tersedia"
                   />
                   <button
                     onClick={copyApiKey}
-                    className="px-3 py-1 text-xs rounded bg-accent text-white"
+                    className="px-3 py-2 text-xs rounded bg-accent text-white"
                   >
                     Salin
                   </button>
                 </div>
-              )}
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowAccountActions(true)}
+                  className="px-4 py-2 text-sm rounded-lg border border-stroke text-foreground hover:border-accent"
+                >
+                  Kelola akun
+                </button>
+              </div>
+
               {showAccountActions && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
-                  <div className="absolute inset-0 bg-black/50" onClick={() => setShowAccountActions(false)}></div>
-                  <div className="relative w-full max-w-sm bg-surface border border-stroke rounded-xl p-5 space-y-3 animate-fade-in">
-                    <p className="text-sm text-gray-300">Kelola akun kamu</p>
+                  <div className="absolute inset-0 bg-black/30" onClick={() => setShowAccountActions(false)}></div>
+                  <div className="relative w-full max-w-xs bg-surface border border-stroke rounded-xl p-4 space-y-3 animate-fade-in">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-gray-300">Kelola akun kamu</p>
+                        <p className="text-lg font-semibold">Manajemen akun</p>
+                      </div>
+                      <button
+                        onClick={() => setShowAccountActions(false)}
+                        className="text-gray-400 hover:text-white"
+                        aria-label="Tutup"
+                      >
+                        ×
+                      </button>
+                    </div>
                     <div className="space-y-2 text-sm">
                       <button
                         className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
@@ -137,10 +219,10 @@ const Sidebar = ({ show, setShow, user }) => {
                         Keluar / Logout
                       </button>
                       <button
-                        className="w-full rounded-lg bg-surface-alt border border-stroke px-3 py-2 text-left hover:border-accent"
-                        onClick={() => setShowAccountActions(false)}
+                        className="w-full rounded-lg bg-red-600/10 border border-red-500/40 px-3 py-2 text-left text-red-200 hover:border-red-400"
+                        onClick={handleDeleteAccount}
                       >
-                        Batal
+                        Hapus akun
                       </button>
                     </div>
                   </div>
@@ -197,15 +279,6 @@ const Sidebar = ({ show, setShow, user }) => {
               <span className="text-xs text-gray-400">Tentang pembuat</span>
             </button>
           </div>
-
-          {user && (
-            <button
-              onClick={handleLogout}
-              className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm"
-            >
-              Keluar
-            </button>
-          )}
         </div>
       </div>
     </>
