@@ -6,6 +6,7 @@ const Sidebar = ({ show, setShow, user }) => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [apiKey, setApiKey] = useState('');
+  const [showAccountActions, setShowAccountActions] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -34,6 +35,7 @@ const Sidebar = ({ show, setShow, user }) => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setShow(false);
+    setShowAccountActions(false);
   };
 
   const copyApiKey = () => {
@@ -47,6 +49,7 @@ const Sidebar = ({ show, setShow, user }) => {
   const handleNavigate = (path) => {
     navigate(path);
     setShow(false);
+    setShowAccountActions(false);
   };
 
   return (
@@ -58,7 +61,7 @@ const Sidebar = ({ show, setShow, user }) => {
         ></div>
       )}
       <div
-        className={`fixed top-4 right-4 w-[calc(100%-2rem)] sm:w-[380px] lg:w-[28vw] max-w-xl max-h-[80vh] bg-dark-800/95 border border-dark-700 rounded-2xl z-50 shadow-2xl transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
+        className={`fixed top-4 right-4 w-1/2 max-w-md min-w-[260px] sm:w-[320px] lg:w-[28vw] h-1/2 max-h-[60vh] bg-surface/95 border border-stroke rounded-2xl z-50 transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
           show ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'
         }`}
       >
@@ -70,7 +73,7 @@ const Sidebar = ({ show, setShow, user }) => {
             </div>
             <button
               onClick={() => setShow(false)}
-              className="text-gray-400 hover:text-white bg-dark-700 hover:bg-dark-600 rounded-full p-2"
+              className="text-foreground bg-surface-alt rounded-full p-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -79,12 +82,13 @@ const Sidebar = ({ show, setShow, user }) => {
           </div>
 
           {user && userData ? (
-            <div className="rounded-xl border border-dark-700 bg-dark-900/70 p-4 space-y-3">
+            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <img
                   src={`https://robohash.org/${user.email}?size=48x48&set=set4`}
                   alt="Avatar"
                   className="w-12 h-12 rounded-full"
+                  onClick={() => setShowAccountActions((prev) => !prev)}
                 />
                 <div>
                   <p className="text-sm text-gray-400">Masuk sebagai</p>
@@ -102,19 +106,28 @@ const Sidebar = ({ show, setShow, user }) => {
                     type="text"
                     value={apiKey}
                     readOnly
-                    className="bg-dark-700 text-xs px-2 py-1 rounded w-full truncate border border-dark-600"
+                    className="bg-surface text-xs px-2 py-1 rounded w-full truncate border border-stroke"
                   />
                   <button
                     onClick={(e) => { e.stopPropagation(); copyApiKey(); }}
-                    className="px-3 py-1 text-xs rounded bg-blue-600 hover:bg-blue-700 text-white"
+                    className="px-3 py-1 text-xs rounded bg-accent text-white"
                   >
                     Salin
                   </button>
                 </div>
               )}
+              {showAccountActions && (
+                <div className="mt-3 space-y-2 text-sm">
+                  <p className="text-gray-300">Kelola akun</p>
+                  <div className="flex gap-2">
+                    <button className="flex-1 rounded bg-surface px-3 py-2 border border-stroke" onClick={handleLogout}>Keluar</button>
+                    <button className="flex-1 rounded bg-surface px-3 py-2 border border-stroke" onClick={() => setShowAccountActions(false)}>Batal</button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="rounded-xl border border-dark-700 bg-dark-900/70 p-4 space-y-3">
+            <div className="rounded-xl border border-stroke bg-surface-alt p-4 space-y-3">
               <p className="text-sm text-gray-300">Belum masuk? Daftar atau login untuk menyimpan subdomain dan API key kamu.</p>
               <div className="flex flex-wrap gap-2">
                 <button
