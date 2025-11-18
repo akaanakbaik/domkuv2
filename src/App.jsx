@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { supabase } from './utils/supabaseClient';
 import Loading from './components/Loading';
 import Navbar from './components/Navbar';
@@ -8,12 +8,14 @@ import Home from './pages/Home';
 import SubdomainPage from './pages/SubdomainPage';
 import ApiPage from './pages/ApiPage';
 import DeveloperPage from './pages/DeveloperPage';
+import AuthPage from './pages/AuthPage';
+import { ToastProvider } from './context/ToastContext';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false);
-  const location = useLocation();
+  const [theme, setTheme] = useState('system');
 
   useEffect(() => {
     const checkSession = async () => {
@@ -32,28 +34,41 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyTheme = () => {
+      const prefersDark = mediaQuery.matches;
+      const applied = theme === 'system' ? (prefersDark ? 'dark' : 'light') : theme;
+      document.documentElement.dataset.theme = applied;
+    };
+
+    applyTheme();
+    mediaQuery.addEventListener('change', applyTheme);
+
+    return () => mediaQuery.removeEventListener('change', applyTheme);
+  }, [theme]);
+
   if (loading) {
     return <Loading />;
   }
 
-  const protectedRoutes = ['/subdomain', '/api'];
-  if (protectedRoutes.includes(location.pathname) && !user) {
-    return <Loading />;
-  }
-
   return (
-    <div className="min-h-screen bg-dark-900 text-white">
-      <Navbar setShowSidebar={setShowSidebar} />
-      <Sidebar show={showSidebar} setShow={setShowSidebar} user={user} />
-      <main className="pt-16">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/subdomain" element={<SubdomainPage user={user} />} />
-          <Route path="/api" element={<ApiPage user={user} />} />
-          <Route path="/developer" element={<DeveloperPage />} />
-        </Routes>
-      </main>
-    </div>
+    <ToastProvider>
+      <div className="min-h-screen bg-dark-900 text-white">
+        <Navbar setShowSidebar={setShowSidebar} user={user} theme={theme} setTheme={setTheme} />
+        <Sidebar show={showSidebar} setShow={setShowSidebar} user={user} />
+        <main className="pt-16">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/subdomain" element={<SubdomainPage user={user} />} />
+            <Route path="/api" element={<ApiPage user={user} />} />
+            <Route path="/developer" element={<DeveloperPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+          </Routes>
+        </main>
+      </div>
+    </ToastProvider>
   );
 }
 
