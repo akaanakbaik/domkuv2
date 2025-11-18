@@ -29,9 +29,9 @@ const Sidebar = ({ show, setShow, user }) => {
       .from('users')
       .select('username, api_key, avatar_url')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') {
       console.error('Error fetching user ', error);
       stopBlocking();
       return;
@@ -133,7 +133,7 @@ const Sidebar = ({ show, setShow, user }) => {
       )}
       <Toast message={toast} onClose={() => setToast('')} />
       <div
-        className={`fixed top-4 right-4 w-[92vw] sm:w-[70vw] md:w-[55vw] lg:w-[32vw] max-w-xl min-w-[260px] max-h-[78vh] bg-surface/95 border border-stroke rounded-2xl z-50 transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
+        className={`fixed top-3 right-3 w-[70vw] sm:w-[55vw] md:w-[45vw] lg:w-[28vw] xl:w-[24vw] max-w-xl min-w-[240px] max-h-[80vh] bg-surface/95 border border-stroke rounded-2xl z-50 transform transition-transform duration-300 ease-in-out sidebar overflow-hidden ${
           show ? 'translate-x-0 opacity-100' : 'translate-x-[120%] opacity-0'
         }`}
       >
