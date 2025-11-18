@@ -17,6 +17,23 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const { active: blocking, start: startBlocking, stop: stopBlocking } = useTimedLoader(1500);
 
+  const ensureProfile = async (account, apiKey) => {
+    if (!account?.id) return;
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id, api_key')
+      .eq('id', account.id)
+      .single();
+
+    const nextKey = existing?.api_key || apiKey || generateApiKey();
+    await supabase.from('users').upsert({
+      id: account.id,
+      username: username || account.email?.split('@')[0],
+      api_key: nextKey,
+    });
+    return nextKey;
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -25,8 +42,9 @@ const AuthPage = () => {
 
     try {
       if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        await ensureProfile(data.user);
         setMessage('Berhasil masuk! Mengalihkan...');
         setTimeout(() => navigate('/subdomain'), 1500);
       } else {
@@ -34,13 +52,7 @@ const AuthPage = () => {
         if (error) throw error;
 
         const apiKey = generateApiKey();
-        if (data.user) {
-          await supabase.from('users').upsert({
-            id: data.user.id,
-            username: username || email.split('@')[0],
-            api_key: apiKey,
-          });
-        }
+        if (data.user) await ensureProfile(data.user, apiKey);
 
         setMessage('Akun berhasil dibuat! Silakan login untuk mulai memakai domku.');
         setMode('login');

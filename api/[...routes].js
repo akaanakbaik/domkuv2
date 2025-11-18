@@ -1,6 +1,11 @@
 // api/[...routes].js
-import { supabase } from '../../src/utils/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { createDNSRecord } from '../../src/utils/cloudflareApi';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
   // Ambil path setelah /api
