@@ -10,6 +10,7 @@ const SubdomainPage = ({ user }) => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showPrompt, setShowPrompt] = useState(!user);
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -54,12 +55,14 @@ const SubdomainPage = ({ user }) => {
         await supabase.from('subdomains').insert([{ user_id: user.id, name: fullDomain, type: recordType, content: recordValue, cf_id: res.result.id }]);
         setSubdomain('');
         setRecordValue('');
+        setToast('Subdomain dibuat');
+        setTimeout(() => setToast(''), 1500);
       } else {
-        alert('Gagal membuat subdomain: ' + JSON.stringify(res.errors));
+        setToast('Gagal membuat subdomain');
       }
     } catch (err) {
       console.error(err);
-      alert('Error: ' + err.message);
+      setToast(err.message || 'Terjadi kesalahan');
     }
     setLoading(false);
   };
@@ -72,7 +75,8 @@ const SubdomainPage = ({ user }) => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Disalin!');
+    setToast('Disalin ke clipboard');
+    setTimeout(() => setToast(''), 1500);
   };
 
   return (
@@ -167,6 +171,13 @@ const SubdomainPage = ({ user }) => {
           ))}
         </div>
       </div>
+      {toast && (
+        <div className="fixed bottom-6 right-4 sm:right-8 z-40 animate-fade-in">
+          <div className="bg-surface-alt border border-stroke text-sm px-4 py-2 rounded-lg shadow-sm text-white">
+            {toast}
+          </div>
+        </div>
+      )}
       {showPrompt && !user && <AuthPrompt onClose={() => setShowPrompt(false)} title="Harus login dulu" />}
     </div>
   );
