@@ -3,7 +3,7 @@ import { createDNSRecord, deleteDNSRecord } from '../utils/cloudflareApi';
 import { supabase } from '../utils/supabaseClient';
 import AuthPrompt from '../components/AuthPrompt';
 
-const SubdomainPage = ({ user }) => {
+const SubdomainPage = ({ user, setOverlayLoading, onToast }) => {
   const [subdomain, setSubdomain] = useState('');
   const [recordType, setRecordType] = useState('A');
   const [recordValue, setRecordValue] = useState('');
@@ -36,44 +36,62 @@ const SubdomainPage = ({ user }) => {
       setShowPrompt(true);
       return;
     }
-    if (!subdomain || !recordValue) return;
+    if (!subdomain || !recordValue) {
+      onToast?.('Lengkapi semua kolom', 'error');
+      return;
+    }
+    if (history.length >= 30) {
+      onToast?.('Batas 30 subdomain per akun sudah tercapai', 'error');
+      return;
+    }
 
     setLoading(true);
+    setOverlayLoading?.(true);
     try {
       const fullDomain = `${subdomain}.domku.my.id`;
       const res = await createDNSRecord(fullDomain, recordType, recordValue);
 
       if (res.success) {
-        const newRecord = {
+        const { data: inserted } = await supabase
+          .from('subdomains')
+          .insert([{ user_id: user.id, name: fullDomain, type: recordType, content: recordValue, cf_id: res.result.id }])
+          .select()
+          .single();
+        const newRecord = inserted || {
           id: res.result.id,
+          cf_id: res.result.id,
           name: fullDomain,
           type: recordType,
           content: recordValue
         };
         setHistory([...history, newRecord]);
-        await supabase.from('subdomains').insert([{ user_id: user.id, name: fullDomain, type: recordType, content: recordValue, cf_id: res.result.id }]);
         setSubdomain('');
         setRecordValue('');
+        onToast?.('Subdomain dibuat', 'success');
       } else {
-        alert('Gagal membuat subdomain: ' + JSON.stringify(res.errors));
+        onToast?.('Gagal membuat subdomain', 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('Error: ' + err.message);
+      onToast?.('Error: ' + err.message, 'error');
     }
     setLoading(false);
+    setOverlayLoading?.(false);
   };
 
   const handleDelete = async (id, cfId) => {
     await deleteDNSRecord(cfId);
     await supabase.from('subdomains').delete().eq('cf_id', cfId);
     setHistory(history.filter(item => item.id !== id));
+    onToast?.('Subdomain dihapus', 'success');
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Disalin!');
+    onToast?.('Disalin ke clipboard', 'success');
   };
+
+  const fullDomain = subdomain ? `${subdomain}.domku.my.id` : '';
 
   return (
     <div className="container mx-auto px-4 py-8 relative">
@@ -82,7 +100,7 @@ const SubdomainPage = ({ user }) => {
         <h1 className="text-3xl font-bold text-blue-400">Buat Subdomain</h1>
         <p className="text-gray-300">Kelola DNS untuk domku.my.id dengan cepat. Semua aksi tersimpan di akun kamu.</p>
       </div>
-      <div className={`card max-w-2xl mx-auto relative ${!user ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`card max-w-2xl mx-auto relative ${!user ? 'opacity-60 pointer-events-none' : ''}`}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
@@ -90,12 +108,12 @@ const SubdomainPage = ({ user }) => {
               <input
                 type="text"
                 value={subdomain}
-                onChange={(e) => setSubdomain(e.target.value)}
+                onChange={(e) => setSubdomain(e.target.value.trim())}
                 className="input w-full"
-                placeholder="contoh: node"
+                placeholder="contoh: node atau node.aka"
                 disabled={!user}
               />
-              {subdomain && <p className="text-sm text-gray-400 mt-1">{subdomain}.domku.my.id</p>}
+              {fullDomain && <p className="text-sm text-gray-400 mt-1">{fullDomain}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Type Record</label>
@@ -118,11 +136,17 @@ const SubdomainPage = ({ user }) => {
               value={recordValue}
               onChange={(e) => setRecordValue(e.target.value)}
               className="input w-full"
-              placeholder="contoh: 165.232.166.128"
+              placeholder={recordType === 'A' ? 'contoh: 165.232.166.128' : 'contoh: target.domain.com'}
               disabled={!user}
             />
-            {subdomain && recordType === 'A' && recordValue && (
-              <p className="text-sm text-gray-400 mt-1">{subdomain}.domku.my.id menunjuk ke {recordValue}</p>
+            {fullDomain && recordValue && (
+              <p className="text-sm text-gray-400 mt-1">
+                {recordType === 'A'
+                  ? `${fullDomain} menunjuk ke ${recordValue}`
+                  : recordType === 'CNAME'
+                    ? `${fullDomain} alias ke ${recordValue}`
+                    : `${fullDomain} TXT: ${recordValue}`}
+              </p>
             )}
           </div>
           <button

@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --page: #0b1021;
+  --surface: #0f172a;
+  --surface-alt: #111a2e;
+  --foreground: #e5ecff;
+  --stroke: #1f2a44;
+  --accent: #1c8fff;
+}
+
+:root[data-theme='light'] {
+  --page: #f6fbff;
+  --surface: #eaf4ff;
+  --surface-alt: #dbeafe;
+  --foreground: #0b1021;
+  --stroke: #b6c2d6;
+  --accent: #1c6bff;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -9,8 +27,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0b0c10;
-  color: white;
+  background-color: var(--page);
+  color: var(--foreground);
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -33,28 +51,44 @@ body {
   background-image: none !important;
 }
 
+.bg-page { background-color: var(--page); }
+.bg-surface { background-color: var(--surface); }
+.bg-surface-alt { background-color: var(--surface-alt); }
+.text-foreground { color: var(--foreground); }
+.border-stroke { border-color: var(--stroke); }
+.text-accent { color: var(--accent); }
+.bg-accent { background-color: var(--accent); }
+.border-stroke { border-color: var(--stroke); }
+
 .btn-blue {
-  @apply bg-blue-600 hover:bg-blue-700 text-white;
+  color: white;
+  background-color: var(--accent);
 }
 
 .btn-gray {
-  @apply bg-gray-700 hover:bg-gray-600 text-white; /* Ganti ke kelas bawaan */
+  background-color: var(--surface-alt);
+  color: var(--foreground);
 }
 
 /* Gaya card tanpa bayangan */
 .card {
-  @apply bg-gray-800 border border-gray-700 rounded-lg p-4; /* Ganti ke kelas bawaan */
+  @apply rounded-lg p-4;
+  background-color: var(--surface);
+  border: 1px solid var(--stroke);
   box-shadow: none !important;
 }
 
 /* Gaya input tanpa bayangan */
 .input {
-  @apply bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white; /* Ganti ke kelas bawaan */
+  @apply rounded px-3 py-2;
+  background-color: var(--surface-alt);
+  border: 1px solid var(--stroke);
+  color: var(--foreground);
   box-shadow: none !important;
 }
 
 /* Gaya sidebar tanpa bayangan */
 .sidebar {
   box-shadow: none !important;
-  background-color: rgba(31, 41, 55, 0.95); /* Ganti ke warna bawaan, misal gray-800 */
+  background-color: rgba(17, 26, 46, 0.95); /* Ganti ke warna bawaan, misal gray-800 */
 }

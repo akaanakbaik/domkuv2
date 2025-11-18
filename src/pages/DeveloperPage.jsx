@@ -3,25 +3,27 @@ import React from 'react';
 const DeveloperPage = () => {
   return (
     <div className="container mx-auto px-4 py-10">
-      <div className="max-w-3xl mx-auto flex flex-col gap-6">
-        <div className="bg-gradient-to-br from-blue-700/30 to-purple-700/20 border border-dark-700 rounded-2xl p-6 shadow-lg">
-          <p className="text-sm text-gray-300">Kenalan dulu</p>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-3">
-            <img
-              src="https://cdn.yupra.my.id/yp/2jz78png.jpg"
-              alt="Aka"
-              className="w-24 h-24 rounded-full object-cover border-2 border-blue-500 shadow"
-            />
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-white">Aka</h1>
-              <p className="text-gray-300 leading-relaxed">
-                Pelajar di SMA Negeri 1 Lembah Melintang. Developer pemula dari Sumatra Barat, Indonesia 🇮🇩 yang suka membangun tool gratis untuk komunitas.
-              </p>
-              <div className="flex flex-wrap gap-2 text-sm text-gray-300">
-                <span className="px-3 py-1 rounded-full bg-dark-700 border border-dark-600">Backend & API</span>
-                <span className="px-3 py-1 rounded-full bg-dark-700 border border-dark-600">UI/UX Enthusiast</span>
-                <span className="px-3 py-1 rounded-full bg-dark-700 border border-dark-600">Cloud tinkerer</span>
+      <div className="max-w-4xl mx-auto flex flex-col gap-6">
+        <div className="border border-stroke rounded-2xl p-6 bg-surface">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <img
+                src="https://cdn.yupra.my.id/yp/2jz78png.jpg"
+                alt="Aka"
+                className="w-24 h-24 rounded-full object-cover border-2 border-stroke"
+              />
+              <div className="space-y-1">
+                <p className="text-sm text-gray-300">Developer</p>
+                <h1 className="text-3xl font-bold text-white">Aka</h1>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  Pelajar SMA Negeri 1 Lembah Melintang, Sumatra Barat 🇮🇩. Developer pemula yang membangun domku untuk membantu komunitas.
+                </p>
               </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {['Backend & API', 'UI/UX Enthusiast', 'Cloud tinkerer'].map((tag) => (
+                <span key={tag} className="px-3 py-1 rounded-full bg-dark-700 border border-dark-600 text-sm text-gray-200">{tag}</span>
+              ))}
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-3">

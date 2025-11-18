@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
 import { generateApiKey } from '../utils/generateApiKey';
 
-const AuthPage = () => {
+const AuthPage = ({ onToast, setOverlayLoading }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const initialMode = location.state?.mode || 'login';
@@ -18,13 +18,15 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+    setOverlayLoading?.(true);
 
     try {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         setMessage('Berhasil masuk! Mengalihkan...');
-        setTimeout(() => navigate('/subdomain'), 1000);
+        onToast?.('Berhasil masuk', 'success');
+        setTimeout(() => navigate('/subdomain'), 800);
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
@@ -38,19 +40,22 @@ const AuthPage = () => {
           });
         }
 
-        setMessage('Akun berhasil dibuat! Silakan cek email konfirmasi jika diperlukan.');
+        setMessage('Akun berhasil dibuat! Silakan masuk untuk mulai membuat subdomain.');
+        onToast?.('Akun dibuat, silakan login.', 'success');
         setMode('login');
       }
     } catch (err) {
       setMessage(err.message || 'Terjadi kesalahan.');
+      onToast?.('Gagal memproses, coba lagi.', 'error');
     } finally {
       setLoading(false);
+      setOverlayLoading?.(false);
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-dark-900 text-white flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-lg bg-dark-800/80 border border-dark-700 rounded-2xl p-6 shadow-lg">
+    <div className="min-h-[calc(100vh-4rem)] bg-page text-foreground flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-lg bg-surface border border-stroke rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-sm text-gray-400">Selamat datang di</p>
@@ -71,8 +76,8 @@ const AuthPage = () => {
               onClick={() => setMode(item)}
               className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 mode === item
-                  ? 'bg-blue-600 border-blue-500 text-white'
-                  : 'bg-dark-900 border-dark-700 text-gray-300 hover:border-gray-500'
+                  ? 'bg-accent border-blue-500 text-white'
+                  : 'bg-surface-alt border-stroke text-gray-300 hover:border-gray-500'
               }`}
             >
               {item === 'login' ? 'Masuk' : 'Daftar'}
@@ -95,12 +100,12 @@ const AuthPage = () => {
 
           {mode === 'register' && (
             <div>
-              <label className="block text-sm text-gray-300 mb-1">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="input w-full"
+            <label className="block text-sm text-gray-300 mb-1">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="input w-full"
                 placeholder="nama pengguna"
               />
             </div>
@@ -128,17 +133,17 @@ const AuthPage = () => {
         </form>
 
         {message && (
-          <p className="mt-4 text-sm text-center text-gray-300 bg-dark-900/60 border border-dark-700 rounded-lg p-3">
+          <p className="mt-4 text-sm text-center text-gray-300 bg-surface-alt border border-stroke rounded-lg p-3">
             {message}
           </p>
         )}
 
         <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-gray-400">
-          <div className="p-3 rounded-lg bg-dark-900/60 border border-dark-700">
+          <div className="p-3 rounded-lg bg-surface-alt border border-stroke">
             <p className="font-semibold text-white">Benefit</p>
             <p className="mt-1">Kelola subdomain, simpan API key, dan lacak aktivitas.</p>
           </div>
-          <div className="p-3 rounded-lg bg-dark-900/60 border border-dark-700">
+          <div className="p-3 rounded-lg bg-surface-alt border border-stroke">
             <p className="font-semibold text-white">Keamanan</p>
             <p className="mt-1">Autentikasi Supabase dan validasi API key otomatis.</p>
           </div>

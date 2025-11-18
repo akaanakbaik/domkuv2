@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AuthPrompt from '../components/AuthPrompt';
 
-const ApiPage = ({ user }) => {
+const ApiPage = ({ user, onToast }) => {
   const [showPrompt, setShowPrompt] = useState(!user);
   const currentUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
@@ -35,12 +35,18 @@ const ApiPage = ({ user }) => {
         </ul>
 
         <h2 className="text-lg font-semibold text-blue-300 mb-2">Contoh cURL</h2>
-        <pre className="bg-dark-900 p-4 rounded text-sm text-gray-200 overflow-x-auto relative">
-            {`{
+        <div className="bg-black text-gray-100 rounded-xl p-4 relative overflow-x-auto border border-stroke">
+          <button
+            onClick={() => { navigator.clipboard.writeText(`curl -X POST "${currentUrl}/api/subdomain" -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{"name":"subdomain_anda","type":"A","content":"165.232.166.128"}'`); onToast?.('Contoh cURL disalin', 'success'); }}
+            className="absolute top-2 right-2 px-3 py-1 rounded bg-accent text-white text-xs"
+          >
+            Salin
+          </button>
+          <code className="text-sm leading-relaxed whitespace-pre">
+{`{
   "author": "Aka",
-  "email_author": "akaanakbaik17@proton.me",`}
-            <br/>
-            {`  "method": "POST",
+  "email_author": "akaanakbaik17@proton.me",
+  "method": "POST",
   "url": "${currentUrl}/api/subdomain",
   "headers": {
     "Authorization": "Bearer YOUR_API_KEY",
@@ -52,13 +58,8 @@ const ApiPage = ({ user }) => {
     "content": "165.232.166.128"
   }
 }`}
-            <button
-              onClick={() => navigator.clipboard.writeText(`curl -X POST "${currentUrl}/api/subdomain" -H "Authorization: Bearer YOUR_API_KEY" -H "Content-Type: application/json" -d '{"name":"subdomain_anda","type":"A","content":"165.232.166.128"}'`)}
-              className="absolute top-2 right-2 text-blue-400 hover:text-blue-300"
-            >
-              Salin
-            </button>
-        </pre>
+          </code>
+        </div>
       </div>
       {showPrompt && !user && (
         <AuthPrompt onClose={() => setShowPrompt(false)} title="Masuk untuk melihat API" />
