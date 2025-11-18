@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import InteractionLoader from '../components/InteractionLoader';
 import { supabase } from '../utils/supabaseClient';
 import { generateApiKey } from '../utils/generateApiKey';
+import { useTimedLoader } from '../utils/useTimedLoader';
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -13,18 +15,20 @@ const AuthPage = () => {
   const [username, setUsername] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const { active: blocking, start: startBlocking, stop: stopBlocking } = useTimedLoader(1500);
 
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+    startBlocking();
 
     try {
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         setMessage('Berhasil masuk! Mengalihkan...');
-        setTimeout(() => navigate('/subdomain'), 1000);
+        setTimeout(() => navigate('/subdomain'), 1500);
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
@@ -45,11 +49,13 @@ const AuthPage = () => {
       setMessage(err.message || 'Terjadi kesalahan.');
     } finally {
       setLoading(false);
+      stopBlocking();
     }
   };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-dark-900 text-white flex items-center justify-center px-4 py-10">
+      {blocking && <InteractionLoader message="Memproses autentikasi..." />}
       <div className="w-full max-w-lg bg-dark-800/80 border border-dark-700 rounded-2xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-6">
           <div>
